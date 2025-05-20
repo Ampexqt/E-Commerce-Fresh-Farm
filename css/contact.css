@@ -1,0 +1,251 @@
+/* Contact Page Styles */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.contact-title {
+    color: #3b7a57;
+    font-size: 1.5rem;
+    margin: 1rem 0 1.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.contact-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    padding: 2rem;
+    margin: 1rem auto;
+    max-width: 700px;
+}
+
+.contact-header {
+    margin-bottom: 1.5rem;
+}
+
+.contact-header h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #3b7a57;
+    margin: 0;
+}
+
+/* Contact Info Section */
+.contact-info-section {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.contact-info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.contact-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.icon-container {
+    width: 36px;
+    height: 36px;
+    background-color: rgba(59, 122, 87, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.icon-container i {
+    color: #3b7a57;
+    font-size: 1rem;
+}
+
+.info-text {
+    color: #333;
+    font-size: 0.95rem;
+}
+
+/* Contact Form */
+.contact-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #3b7a57;
+    outline: none;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(59, 122, 87, 0.1);
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.submit-button {
+    background-color: #3b7a57;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.submit-button:hover {
+    background-color: #2a5840;
+}
+
+.submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Email readonly field styling */
+.email-readonly-container {
+    position: relative;
+}
+
+.readonly-input {
+    background-color: #f1f5f1 !important;
+    border: 1px solid #dde6dd !important;
+    cursor: not-allowed;
+    color: #5a6269 !important;
+    opacity: 0.9;
+    padding-right: 40px !important;
+}
+
+.readonly-badge {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(59, 122, 87, 0.1);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.readonly-badge i {
+    color: #3b7a57;
+    font-size: 0.8rem;
+}
+
+.field-hint {
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .contact-container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .contact-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .submit-button {
+        width: 100%;
+    }
+}
+
+/* Alert messages */
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.alert i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Submit button with loading state */
+.submit-button {
+    position: relative;
+}
+
+.loading-icon {
+    margin-left: 8px;
+}
+
+.submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Add loading animation */
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.fa-spinner {
+    animation: rotate 1s linear infinite;
+}
+
+/* JavaScript to handle form submission */

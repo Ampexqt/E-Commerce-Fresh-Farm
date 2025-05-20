@@ -49,8 +49,12 @@ try {
         throw new Exception('Action is required');
     }
 
+    // Transaction flag
+    $transaction_started = false;
+    
     // Start transaction
     $conn->begin_transaction();
+    $transaction_started = true;
 
     switch ($data['action']) {
         case 'remove':
@@ -104,6 +108,7 @@ try {
             }
 
             $conn->commit();
+            $transaction_started = false;
             sendJSON(['success' => true, 'message' => 'Payment method removed successfully']);
             break;
 
@@ -126,6 +131,7 @@ try {
             }
 
             $conn->commit();
+            $transaction_started = false;
             sendJSON(['success' => true, 'message' => 'Default payment method updated']);
             break;
 
@@ -134,7 +140,7 @@ try {
     }
 
 } catch (Exception $e) {
-    if ($conn->inTransaction()) {
+    if ($transaction_started) {
         $conn->rollback();
     }
     sendJSON(['success' => false, 'message' => $e->getMessage()]);

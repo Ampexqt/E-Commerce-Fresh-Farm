@@ -1,4 +1,13 @@
 <?php
+session_start();
+
+// Check if user is logged in and is an admin
+if(!isset($_SESSION['user_id']) || ($_SESSION['user_role'] !== 'admin' && !isset($_SESSION['is_admin']))) {
+    // Not logged in or not an admin, redirect to login page
+    header("Location: ../index.php");
+    exit;
+}
+
 // Include database connection
 require_once '../connect.php';
 
@@ -22,25 +31,62 @@ function getOrderCount($conn) {
 
 // Function to get total revenue
 function getTotalRevenue($conn) {
-    $result = $conn->query("SELECT SUM(total_amount) as total FROM orders");
+    $result = $conn->query("SELECT SUM(total_amount) as total FROM orders WHERE LOWER(status) = 'delivered'");
     return ($result && $result->num_rows > 0) ? $result->fetch_assoc()['total'] : 0;
 }
 
-// Function to get sales data for the last 7 days
-function getSalesData($conn) {
+// Function to get sales data for different time periods
+function getSalesData($conn, $timeRange = '7days') {
     $salesData = [];
+    $today = date('Y-m-d');
     
-    // Get data for the last 7 days
-    for ($i = 6; $i >= 0; $i--) {
+    switch ($timeRange) {
+        case '30days':
+            $days = 30;
+            break;
+        case 'month':
+            // Current month
+            $days = date('t'); // Number of days in current month
+            $today = date('Y-m-') . date('t'); // Last day of current month
+            $startDay = date('Y-m-01'); // First day of current month
+            break;
+        case '7days':
+        default:
+            $days = 7;
+            break;
+    }
+    
+    if ($timeRange == 'month') {
+        // For current month, we want to show all days of the month
+        $currentDay = 1;
+        $daysInMonth = date('t');
+        
+        for ($i = 0; $i < $daysInMonth; $i++) {
+            $date = date('Y-m-') . str_pad($currentDay, 2, '0', STR_PAD_LEFT);
+            $result = $conn->query("SELECT SUM(total_amount) as total FROM orders WHERE DATE(order_date) = '$date' AND LOWER(status) = 'delivered'");
+            $row = $result->fetch_assoc();
+            $total = $row['total'] ? $row['total'] : 0;
+            
+            $salesData[] = [
+                'date' => $currentDay, // Just the day number for month view
+                'total' => $total
+            ];
+            
+            $currentDay++;
+        }
+    } else {
+        // For 7 or 30 days
+        for ($i = $days - 1; $i >= 0; $i--) {
         $date = date('Y-m-d', strtotime("-$i days"));
-        $result = $conn->query("SELECT SUM(total_amount) as total FROM orders WHERE DATE(order_date) = '$date'");
+            $result = $conn->query("SELECT SUM(total_amount) as total FROM orders WHERE DATE(order_date) = '$date' AND LOWER(status) = 'delivered'");
         $row = $result->fetch_assoc();
         $total = $row['total'] ? $row['total'] : 0;
         
         $salesData[] = [
-            'date' => date('D', strtotime($date)),
+                'date' => $timeRange == '30days' ? date('M d', strtotime($date)) : date('D', strtotime($date)),
             'total' => $total
         ];
+        }
     }
     
     return $salesData;
@@ -108,7 +154,18 @@ $productCount = getProductCount($conn);
 $userCount = getUserCount($conn);
 $orderCount = getOrderCount($conn);
 $totalRevenue = getTotalRevenue($conn);
-$salesData = getSalesData($conn);
+
+// Get the time range from GET parameter or use default
+$timeRange = isset($_GET['timeRange']) ? $_GET['timeRange'] : '7days';
+
+// Validate time range
+if(!in_array($timeRange, ['7days', '30days', 'month'])) {
+    $timeRange = '7days'; // Default to 7 days if invalid
+}
+
+// Get sales data for the selected time range
+$salesData = getSalesData($conn, $timeRange);
+
 $categoryDistribution = getCategoryDistribution($conn);
 $recentOrders = getRecentOrders($conn);
 $lowStockProducts = getLowStockProducts($conn);
@@ -161,10 +218,17 @@ $lowStockProducts = getLowStockProducts($conn);
             position: relative;
             height: 300px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
             padding: 20px;
             margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-container:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
         }
         
         .chart-container h5 {
@@ -172,6 +236,12 @@ $lowStockProducts = getLowStockProducts($conn);
             font-weight: 600;
             margin-bottom: 25px;
             color: #333;
+        }
+
+        .chart-container .badge {
+            font-weight: 500;
+            padding: 0.3em 0.6em;
+            font-size: 0.75em;
         }
 
         .chart-content {
@@ -189,16 +259,55 @@ $lowStockProducts = getLowStockProducts($conn);
         
         .table-container {
             background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
             padding: 20px;
             margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-container:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
         }
         
         .icon-orders { background-color: #e3f2fd; color: #0d6efd; }
         .icon-revenue { background-color: #e0f7fa; color: #00bcd4; }
         .icon-users { background-color: #f0f4c3; color: #cddc39; }
         .icon-products { background-color: #ffebee; color: #f44336; }
+        
+        /* Button styles */
+        .btn-outline-secondary {
+            border-color: #dee2e6;
+            color: #495057;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            border-color: #ced4da;
+            color: #212529;
+        }
+        
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 0.5rem 0;
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f0f7ff;
+        }
     </style>
 </head>
 <body>
@@ -223,7 +332,7 @@ $lowStockProducts = getLowStockProducts($conn);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="orders.php">
+                        <a class="nav-link" href="AdminOrders.php">
                             <i class="fas fa-shopping-cart"></i> Orders
                         </a>
                     </li>
@@ -245,6 +354,11 @@ $lowStockProducts = getLowStockProducts($conn);
                     <li class="nav-item">
                         <a class="nav-link" href="settings.php">
                             <i class="fas fa-cog"></i> Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>
                 </ul>
@@ -320,19 +434,20 @@ $lowStockProducts = getLowStockProducts($conn);
                 <div class="col-lg-8 mb-4">
                     <div class="chart-container">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="m-0">Sales Overview</h5>
+                            <h5 class="m-0">Sales Overview <span class="badge bg-success ms-2 fs-6">Delivered Orders</span></h5>
                             <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="timeRangeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Last 7 days
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="timeRangeDropdown">
-                                    <li><a class="dropdown-item" href="#">Last 7 days</a></li>
-                                    <li><a class="dropdown-item" href="#">Last 30 days</a></li>
-                                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                                </ul>
+                                <form id="timeRangeForm" method="GET" action="">
+                                    <select name="timeRange" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="7days" <?php echo (!isset($_GET['timeRange']) || $_GET['timeRange'] == '7days') ? 'selected' : ''; ?>>Last 7 days</option>
+                                        <option value="30days" <?php echo (isset($_GET['timeRange']) && $_GET['timeRange'] == '30days') ? 'selected' : ''; ?>>Last 30 days</option>
+                                        <option value="month" <?php echo (isset($_GET['timeRange']) && $_GET['timeRange'] == 'month') ? 'selected' : ''; ?>>This Month</option>
+                                    </select>
+                                </form>
                             </div>
                         </div>
+                        <div class="chart-wrapper position-relative">
                         <canvas id="salesChart"></canvas>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">
@@ -387,7 +502,7 @@ $lowStockProducts = getLowStockProducts($conn);
                             </table>
                         </div>
                         <div class="text-end">
-                            <a href="orders.php" class="btn btn-sm btn-outline-primary">View All Orders</a>
+                            <a href="AdminOrders.php" class="btn btn-sm btn-outline-primary">View All Orders</a>
                         </div>
                     </div>
                 </div>
@@ -466,7 +581,12 @@ $lowStockProducts = getLowStockProducts($conn);
         
         // Sales Chart
         const salesCtx = document.getElementById('salesChart').getContext('2d');
-        const salesChart = new Chart(salesCtx, {
+        let salesChart;
+        
+        // Initialize chart with data
+        function initSalesChart() {
+            // Create new chart
+            salesChart = new Chart(salesCtx, {
             type: 'line',
             data: {
                 labels: [
@@ -481,33 +601,68 @@ $lowStockProducts = getLowStockProducts($conn);
                             <?php echo $data['total']; ?>,
                         <?php endforeach; ?>
                     ],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    tension: 0.1,
-                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                    pointRadius: 4
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: 'rgba(59, 130, 246, 0.8)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: 'rgba(255, 255, 255, 1)',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+                        pointHoverBorderWidth: 3
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 25,
+                            bottom: 10,
+                            left: 25
+                        }
+                    },
                 scales: {
                     y: {
                         beginAtZero: true,
                         grid: {
-                            drawBorder: false
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                padding: 10,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                },
+                                color: 'rgba(0, 0, 0, 0.6)',
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
                         },
                         ticks: {
-                            callback: function(value) {
-                                return '₱' + value;
+                                padding: 10,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                },
+                                color: 'rgba(0, 0, 0, 0.6)'
                             }
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                    elements: {
+                        line: {
+                            tension: 0.4
                     }
                 },
                 plugins: {
@@ -515,15 +670,42 @@ $lowStockProducts = getLowStockProducts($conn);
                         display: false
                     },
                     tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 15,
+                            cornerRadius: 8,
+                            displayColors: false,
                         callbacks: {
                             label: function(context) {
-                                return '₱' + context.parsed.y;
-                            }
+                                    let value = context.parsed.y;
+                                    return '₱' + value.toLocaleString();
+                                },
+                                title: function(context) {
+                                    return context[0].label + ' - Sales Revenue';
                         }
                     }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
                 }
             }
         });
+        }
+        
+        // Initialize chart on page load
+        initSalesChart();
 
         // Category Distribution Chart
         const categoryCtx = document.getElementById('categoryChart').getContext('2d');
@@ -603,5 +785,25 @@ $lowStockProducts = getLowStockProducts($conn);
         });
     });
 </script>
+
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to logout?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="../logout.php" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

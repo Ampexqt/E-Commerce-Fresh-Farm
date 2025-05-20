@@ -237,22 +237,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <?php echo $product['stock']; ?> <?php echo $product['unit'] . ($product['stock'] > 1 ? 's' : ''); ?> available
                                     </div>
                                     <div class="product-actions">
-                                        <button class="add-to-cart-btn" onclick="addToCart(<?php echo $product['id']; ?>)" <?php echo ($product['stock'] <= 0) ? 'disabled' : ''; ?>>
+                                        <button class="add-to-cart-btn" onclick="showProductCartModal(<?php echo $product['id']; ?>)" <?php echo ($product['stock'] <= 0) ? 'disabled' : ''; ?>>
                                             <i class="fa-solid fa-cart-shopping"></i>
                                             ADD TO CART
-                                        </button>
-                                        <button class="buy-now-btn" 
-                                            onclick="showBuyModal({
-                                                id: <?php echo $product['id']; ?>,
-                                                name: '<?php echo addslashes($product['name']); ?>',
-                                                price: <?php echo $product['price']; ?>,
-                                                image: '../<?php echo $product['image_path']; ?>',
-                                                stock: <?php echo $product['stock']; ?>,
-                                                unit: '<?php echo $product['unit']; ?>'
-                                            })" 
-                                            <?php echo ($product['stock'] <= 0) ? 'disabled' : ''; ?>>
-                                            <i class="fa-solid fa-bolt"></i>
-                                            BUY NOW
                                         </button>
                                     </div>
                                 </div>
@@ -278,8 +265,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </main>
     </div>
 
+
+
+    <!-- Add to Cart Modal -->
+    <div class="cart-modal-overlay" id="cartModal" style="display:none;">
+        <div class="cart-modal">
+            <div class="cart-modal-header">
+                <h2 class="cart-modal-title">Add to Cart</h2>
+                <button class="cart-modal-close">&times;</button>
+            </div>
+            <div class="cart-modal-content">
+                <div class="product-preview">
+                    <img src="" alt="" class="preview-image" id="cartPreviewImage">
+                    <div class="preview-details">
+                        <h3 class="preview-title" id="cartPreviewTitle"></h3>
+                        <p class="preview-price" id="cartPreviewPrice"></p>
+                    </div>
+                </div>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" id="cartDecreaseQuantity">-</button>
+                    <input type="number" class="quantity-input" id="cartQuantityInput" value="1" min="1">
+                    <button class="quantity-btn" id="cartIncreaseQuantity">+</button>
+                </div>
+                <p class="availability-info" id="cartStockInfo"></p>
+                <div class="total-price-container">
+                    <p class="total-price-label">Total:</p>
+                    <p class="total-price-value" id="cartTotalPrice">₱0.00</p>
+                </div>
+            </div>
+            <div class="cart-modal-actions">
+                <button class="modal-btn cancel-btn" id="cancelCartBtn">CANCEL</button>
+                <button class="modal-btn confirm-btn" id="addToCartBtn">ADD TO CART</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Address Selection Modal -->
+    <div class="selection-modal-overlay" id="addressSelectionModal" style="display:none;">
+        <div class="selection-modal">
+            <div class="selection-modal-header">
+                <h2>Select Delivery Address</h2>
+                <button class="close-modal" onclick="hideAddressSelection()">&times;</button>
+            </div>
+            <div class="selection-modal-content" id="addressList">
+                <!-- Address list will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Selection Modal -->
+    <div class="selection-modal-overlay" id="paymentSelectionModal" style="display:none;">
+        <div class="selection-modal">
+            <div class="selection-modal-header">
+                <h2>Select Payment Method</h2>
+                <button class="close-modal" onclick="hidePaymentSelection()">&times;</button>
+            </div>
+            <div class="selection-modal-content" id="paymentList">
+                <!-- Payment method list will be populated here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Logout Modal -->
-    <div class="modal-overlay" id="logoutModal">
+    <div class="modal-overlay" id="logoutModal" style="display:none;">
         <div class="logout-modal">
             <h2>Logout Confirmation</h2>
             <p>Are you sure you want to logout from your account?</p>
@@ -295,148 +343,181 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- Buy Now Modal -->
-    <div class="buy-modal-overlay modal-overlay" id="buyModal">
-        <div class="buy-modal">
-            <div class="buy-modal-header">
-                <h2 class="buy-modal-title">Buy Now</h2>
-                <button class="buy-modal-close">&times;</button>
-            </div>
-            <div class="buy-modal-content">
-                <div class="product-preview">
-                    <img src="" alt="" class="preview-image" id="previewImage">
-                    <div class="preview-details">
-                        <h3 class="preview-title" id="previewTitle"></h3>
-                        <p class="preview-price" id="previewPrice"></p>
-                    </div>
-                </div>
-                <div class="quantity-selector">
-                    <button class="quantity-btn" id="decreaseQuantity">-</button>
-                    <input type="number" class="quantity-input" id="quantityInput" value="1" min="1">
-                    <button class="quantity-btn" id="increaseQuantity">+</button>
-                </div>
-                <p class="stock-info" id="stockInfo"></p>
-
-                <!-- Delivery Address Section -->
-                <div class="delivery-section">
-                    <h3>Delivery Address</h3>
-                    <div id="selectedAddress" class="selected-address">
-                        <p class="no-address-msg" style="display: none;">No default address selected</p>
-                    </div>
-                </div>
-            </div>
-            <div class="buy-modal-actions">
-                <button class="modal-btn cancel-buy-btn">CANCEL</button>
-                <button class="modal-btn confirm-buy-btn">CONFIRM PURCHASE</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Address Selection Modal -->
-    <div class="selection-modal-overlay modal-overlay" id="addressSelectionModal">
-        <div class="selection-modal">
-            <div class="selection-modal-header">
-                <h2>Select Delivery Address</h2>
-                <button class="close-modal" onclick="hideAddressSelection()">&times;</button>
-            </div>
-            <div class="selection-modal-content" id="addressList">
-                <!-- Address list will be populated here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Payment Selection Modal -->
-    <div class="selection-modal-overlay modal-overlay" id="paymentSelectionModal">
-        <div class="selection-modal">
-            <div class="selection-modal-header">
-                <h2>Select Payment Method</h2>
-                <button class="close-modal" onclick="hidePaymentSelection()">&times;</button>
-            </div>
-            <div class="selection-modal-content" id="paymentList">
-                <!-- Payment method list will be populated here -->
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Add to Cart Function
-        function addToCart(productId) {
-            fetch('../add_to_cart.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    product_id: productId,
-                    quantity: 1
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status) {
-                    // Show success message
-                    alert(data.message);
-                    // Update cart count if needed
-                    // You can add cart count update logic here
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while adding to cart');
-            });
-        }
+        // State variables that need global scope
+        let currentCartProductId = null;
+        let currentCartProductPrice = 0;
 
         // Modal Control Functions
         function showModal(modalId) {
+            console.log(`Showing modal: ${modalId}`);
             const modalOverlay = document.getElementById(modalId);
-            if (modalOverlay) {
-                modalOverlay.classList.add('visible');
-                // The inner modal animation is handled by CSS:
-                // .modal-overlay.visible .logout-modal,
-                // .modal-overlay.visible .buy-modal, etc.
+            
+            if (!modalOverlay) {
+                console.error(`Modal overlay not found: ${modalId}`);
+                return;
             }
+            
+            // Make sure display is flex for proper centering and display
+            modalOverlay.style.display = 'flex';
+            
+            // Find the modal content element
+            let modalContent;
+            if (modalId === 'cartModal') {
+                modalContent = modalOverlay.querySelector('.cart-modal');
+            } else if (modalId.includes('Selection')) {
+                modalContent = modalOverlay.querySelector('.selection-modal');
+            } else {
+                modalContent = modalOverlay.querySelector('.logout-modal');
+            }
+            
+            if (!modalContent) {
+                console.error(`Modal content not found in ${modalId}`);
+                return;
+            }
+            
+            // Add the active class to trigger animation
+            setTimeout(() => {
+                modalContent.classList.add('active');
+            }, 10);
+            
+            // Prevent background scrolling
+            document.body.style.overflow = 'hidden';
+            
+            console.log(`Modal shown successfully: ${modalId}`);
         }
 
         function hideModal(modalId) {
+            console.log(`Hiding modal: ${modalId}`);
             const modalOverlay = document.getElementById(modalId);
-            if (modalOverlay) {
-                modalOverlay.classList.remove('visible');
+            
+            if (!modalOverlay) {
+                console.error(`Modal overlay not found: ${modalId}`);
+                return;
             }
+            
+            // Find the modal content element
+            let modalContent;
+            if (modalId === 'cartModal') {
+                modalContent = modalOverlay.querySelector('.cart-modal');
+            } else if (modalId.includes('Selection')) {
+                modalContent = modalOverlay.querySelector('.selection-modal');
+            } else {
+                modalContent = modalOverlay.querySelector('.logout-modal');
+            }
+            
+            if (!modalContent) {
+                console.error(`Modal content not found in ${modalId}`);
+                return;
+            }
+            
+            // Remove the active class to trigger animation
+            modalContent.classList.remove('active');
+            
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                modalOverlay.style.display = 'none';
+                // Restore background scrolling
+                document.body.style.overflow = '';
+            }, 250);
+            
+            console.log(`Modal hidden successfully: ${modalId}`);
         }
 
-        // Buy Now Modal Functions
-        const buyModalOverlay = document.getElementById('buyModal');
-        const buyModalClose = buyModalOverlay.querySelector('.buy-modal-close');
-        const cancelBuyBtn = buyModalOverlay.querySelector('.cancel-buy-btn');
-        const confirmBuyBtn = buyModalOverlay.querySelector('.confirm-buy-btn');
-        const quantityInput = document.getElementById('quantityInput');
-        const decreaseQuantityBtn = document.getElementById('decreaseQuantity');
-        const increaseQuantityBtn = document.getElementById('increaseQuantity');
-        let currentBuyProductId = null;
-        let selectedAddressId = null;
 
-        function showBuyModal(productData) {
-            showModal('buyModal');
-            document.getElementById('previewImage').src = productData.image;
-            document.getElementById('previewTitle').textContent = productData.name;
-            document.getElementById('previewPrice').textContent = `₱${parseFloat(productData.price).toFixed(2)}`;
-            document.getElementById('stockInfo').textContent = `Available: ${productData.stock} ${productData.unit}${productData.stock > 1 ? 's' : ''}`;
-            quantityInput.value = 1;
-            quantityInput.max = productData.stock;
-            currentBuyProductId = productData.id;
-            loadDefaultAddress();
+
+        // Cart Modal Functions
+        function showCartModal(productData) {
+            // Clear any previous data
+            const cartPreviewImage = document.getElementById('cartPreviewImage');
+            const cartPreviewTitle = document.getElementById('cartPreviewTitle');
+            const cartPreviewPrice = document.getElementById('cartPreviewPrice');
+            const cartStockInfo = document.getElementById('cartStockInfo');
+            const cartQuantityInput = document.getElementById('cartQuantityInput');
+            
+            if (!cartPreviewImage || !cartPreviewTitle || !cartPreviewPrice || !cartStockInfo || !cartQuantityInput) {
+                console.error('Cart modal elements not found');
+                return;
+            }
+            
+            // Load new product data
+            cartPreviewImage.src = productData.image;
+            cartPreviewTitle.textContent = productData.name;
+            cartPreviewPrice.textContent = `₱${parseFloat(productData.price).toFixed(2)}`;
+            cartStockInfo.textContent = `Available: ${productData.stock} ${productData.unit}${productData.stock > 1 ? 's' : ''}`;
+            
+            // Initialize quantity and price
+            cartQuantityInput.value = 1;
+            cartQuantityInput.max = productData.stock;
+            currentCartProductId = productData.id;
+            currentCartProductPrice = parseFloat(productData.price);
+            updateCartTotal();
+            
+            // Show modal
+            showModal('cartModal');
         }
 
+        function hideCartModal() {
+            hideModal('cartModal');
+        }
+
+        // Helper Functions
+        function updateCartTotal() {
+            const cartQuantityInput = document.getElementById('cartQuantityInput');
+            const cartTotalPrice = document.getElementById('cartTotalPrice');
+            
+            if (!cartQuantityInput || !cartTotalPrice) return;
+            
+            const quantity = parseInt(cartQuantityInput.value) || 1;
+            const total = quantity * currentCartProductPrice;
+            cartTotalPrice.textContent = `₱${total.toFixed(2)}`;
+        }
+
+        // Selection Modal Functions
+        function showAddressSelection() { 
+            showModal('addressSelectionModal');
+        }
+
+        function hideAddressSelection() {
+            hideModal('addressSelectionModal');
+        }
+
+        function showPaymentSelection() { 
+            showModal('paymentSelectionModal');
+        }
+
+        function hidePaymentSelection() {
+            hideModal('paymentSelectionModal');
+        }
+
+        // Logout Modal Functions
+        function showLogoutModal() {
+            showModal('logoutModal');
+        }
+
+        function hideLogoutModal() {
+            hideModal('logoutModal');
+        }
+
+        // Enhanced default address loading
         function loadDefaultAddress() {
             fetch('get_addresses.php')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 const selectedAddressDiv = document.getElementById('selectedAddress');
-                if (data.status === 'success' && data.addresses.length > 0) {
+                const noAddressMsg = document.querySelector('.no-address-msg');
+                
+                if (!selectedAddressDiv) return;
+                
+                if (data.status === 'success' && data.addresses && data.addresses.length > 0) {
                     const defaultAddress = data.addresses.find(addr => addr.is_default) || data.addresses[0];
                     selectedAddressId = defaultAddress.id;
+                    
                     selectedAddressDiv.innerHTML = `
                         <div class="address-info">
                             <p class="address-type">${defaultAddress.address_type} Address</p>
@@ -447,56 +528,262 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <p class="phone">Phone: ${defaultAddress.phone_number}</p>
                         </div>
                     `;
-                    selectedAddressDiv.querySelector('.no-address-msg').style.display = 'none';
+                    
+                    if (noAddressMsg) {
+                        noAddressMsg.style.display = 'none';
+                    }
                 } else {
-                    selectedAddressDiv.querySelector('.no-address-msg').style.display = 'block';
+                    selectedAddressId = null;
+                    if (noAddressMsg) {
+                        noAddressMsg.style.display = 'block';
+                    }
                 }
+            })
+            .catch(error => {
+                console.error('Error loading addresses:', error);
+                selectedAddressId = null;
+                const noAddressMsg = document.querySelector('.no-address-msg');
+                if (noAddressMsg) {
+                    noAddressMsg.style.display = 'block';
+                }
+                showNotification('Could not load delivery addresses. Please try again.', 'error');
             });
         }
 
-        function hideBuyModal() {
-            hideModal('buyModal');
-        }
-
-        decreaseQuantityBtn.addEventListener('click', () => {
-            let value = parseInt(quantityInput.value);
-            if (value > 1) quantityInput.value = value - 1;
-        });
-
-        increaseQuantityBtn.addEventListener('click', () => {
-            let value = parseInt(quantityInput.value);
-            let max = parseInt(quantityInput.max);
-            if (value < max) quantityInput.value = value + 1;
-        });
-
-        quantityInput.addEventListener('change', () => {
-            let value = parseInt(quantityInput.value);
-            let max = parseInt(quantityInput.max);
-            if (isNaN(value) || value < 1) value = 1;
-            if (value > max) value = max;
-            quantityInput.value = value;
-        });
-
-        buyModalClose.addEventListener('click', hideBuyModal);
-        cancelBuyBtn.addEventListener('click', hideBuyModal);
-        buyModalOverlay.addEventListener('click', (e) => {
-            if (e.target === buyModalOverlay) hideBuyModal();
-        });
-
-        confirmBuyBtn.addEventListener('click', function() {
-            if (!selectedAddressId) {
-                alert('No default delivery address found. Please set up a default address in your profile.');
+        // Function to show product cart modal
+        function showProductCartModal(productId) {
+            // Find the product card with this ID
+            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            if (!productCard) {
+                console.error('Product card not found for ID:', productId);
                 return;
             }
             
-            const quantity = quantityInput.value;
-            window.location.href = `checkout.php?product_id=${currentBuyProductId}&quantity=${quantity}&address_id=${selectedAddressId}&buy_now=true`;
+            try {
+                const productName = productCard.querySelector('.product-title').textContent;
+                const productPrice = productCard.querySelector('.price-amount').textContent;
+                const productImage = productCard.querySelector('.product-image').src;
+                const productStock = productCard.dataset.stock;
+                const productUnit = productCard.dataset.unit;
+                
+                const productData = {
+                    id: productId,
+                    name: productName,
+                    price: productPrice.replace(/[^\d.]/g, ''),
+                    image: productImage,
+                    stock: parseInt(productStock),
+                    unit: productUnit
+                };
+                
+                showCartModal(productData);
+            } catch (error) {
+                console.error('Error preparing product data:', error);
+                showNotification('Error opening product modal. Please try again.', 'error');
+            }
+        }
+
+        // Set up event listeners when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded - setting up modal event listeners');
+            
+
+            
+            const cartModalOverlay = document.getElementById('cartModal');
+            if (cartModalOverlay) {
+                cartModalOverlay.addEventListener('click', function(e) {
+                    if (e.target === cartModalOverlay) {
+                        hideCartModal();
+                    }
+                });
+            }
+            
+            const addressSelectionModal = document.getElementById('addressSelectionModal');
+            if (addressSelectionModal) {
+                addressSelectionModal.addEventListener('click', function(e) {
+                    if (e.target === addressSelectionModal) {
+                        hideAddressSelection();
+                    }
+                });
+            }
+            
+            const paymentSelectionModal = document.getElementById('paymentSelectionModal');
+            if (paymentSelectionModal) {
+                paymentSelectionModal.addEventListener('click', function(e) {
+                    if (e.target === paymentSelectionModal) {
+                        hidePaymentSelection();
+                    }
+                });
+            }
+            
+            const logoutModal = document.getElementById('logoutModal');
+            if (logoutModal) {
+                logoutModal.addEventListener('click', function(e) {
+                    if (e.target === logoutModal) {
+                        hideLogoutModal();
+                    }
+                });
+            }
+            
+
+            
+            // Set up Cart Modal Events
+            const cartModal = cartModalOverlay ? cartModalOverlay.querySelector('.cart-modal') : null;
+            const cartModalClose = cartModal ? cartModal.querySelector('.cart-modal-close') : null;
+            const cancelCartBtn = document.getElementById('cancelCartBtn');
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            const cartQuantityInput = document.getElementById('cartQuantityInput');
+            const cartDecreaseQuantityBtn = document.getElementById('cartDecreaseQuantity');
+            const cartIncreaseQuantityBtn = document.getElementById('cartIncreaseQuantity');
+            
+            if (cartModalClose) cartModalClose.addEventListener('click', hideCartModal);
+            if (cancelCartBtn) cancelCartBtn.addEventListener('click', hideCartModal);
+            
+            if (addToCartBtn) {
+                addToCartBtn.addEventListener('click', function() {
+                    if (!cartQuantityInput) return;
+                    
+                    const quantity = parseInt(cartQuantityInput.value) || 1;
+                    addToCart(currentCartProductId, quantity);
+                    hideCartModal();
+                });
+            }
+            
+            if (cartDecreaseQuantityBtn && cartQuantityInput) {
+                cartDecreaseQuantityBtn.addEventListener('click', () => {
+                    let value = parseInt(cartQuantityInput.value);
+                    if (value > 1) {
+                        cartQuantityInput.value = value - 1;
+                        updateCartTotal();
+                    }
+                });
+            }
+            
+            if (cartIncreaseQuantityBtn && cartQuantityInput) {
+                cartIncreaseQuantityBtn.addEventListener('click', () => {
+                    let value = parseInt(cartQuantityInput.value);
+                    let max = parseInt(cartQuantityInput.max);
+                    if (value < max) {
+                        cartQuantityInput.value = value + 1;
+                        updateCartTotal();
+                    }
+                });
+            }
+            
+            if (cartQuantityInput) {
+                cartQuantityInput.addEventListener('change', () => {
+                    let value = parseInt(cartQuantityInput.value);
+                    let max = parseInt(cartQuantityInput.max);
+                    if (isNaN(value) || value < 1) value = 1;
+                    if (value > max) value = max;
+                    cartQuantityInput.value = value;
+                    updateCartTotal();
+                });
+            }
+            
+            console.log('Modal event listeners setup complete');
         });
 
-        // Close modals on click outside (for selection modals)
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('selection-modal-overlay') && e.target.classList.contains('visible')) {
-                e.target.classList.remove('visible');
+        // Add to Cart Function
+        function addToCart(productId, quantity = 1) {
+            fetch('../add_to_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: quantity
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status) {
+                    // Show success notification
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                showNotification('An error occurred while adding to cart. Please try again.', 'error');
+            });
+        }
+
+        // Notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            let container = document.getElementById('notification-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'notification-container';
+                container.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    z-index: 1000;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    pointer-events: none;
+                `;
+                document.body.appendChild(container);
+            }
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateY(20px)';
+            container.appendChild(notification);
+            
+            // Force a reflow
+            notification.offsetHeight;
+            
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateY(0)';
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(20px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Existing sidebar toggle functionality
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleIcon = sidebarToggle.querySelector('i');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                toggleIcon.classList.remove('fa-bars');
+                toggleIcon.classList.add('fa-times');
+            } else {
+                toggleIcon.classList.remove('fa-times');
+                toggleIcon.classList.add('fa-bars');
+            }
+            
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
+
+        // Check saved sidebar state
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (sidebarCollapsed) {
+                toggleSidebar();
             }
         });
 
@@ -537,24 +824,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                             `;
                         }
+                        
+                        showNotification('Item removed from favorites', 'success');
                     }
                 })
-                .catch(error => {
+    .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while removing the item from favorites');
+                    showNotification('An error occurred while removing the item from favorites', 'error');
                 });
             }
-        }
-
-        // Logout Modal Functions
-        const logoutModalOverlay = document.getElementById('logoutModal');
-
-        function showLogoutModal() {
-            showModal('logoutModal');
-        }
-
-        function hideLogoutModal() {
-            hideModal('logoutModal');
         }
 
         function confirmLogout(button) {
@@ -575,10 +853,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Redirect to login page or home page after logout
+                    showNotification('Logging out...', 'success');
+                    setTimeout(() => {
                     window.location.href = '../index.php';
+                    }, 500);
                 } else {
-                    alert('Logout failed: ' + (data.message || 'Unknown error'));
+                    showNotification(data.message || 'Logout failed', 'error');
                     btnText.style.display = 'inline-block';
                     spinner.style.display = 'none';
                     button.disabled = false;
@@ -586,135 +866,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             })
             .catch(error => {
                 console.error('Logout error:', error);
-                alert('An error occurred during logout.');
+                showNotification('An error occurred during logout', 'error');
                 btnText.style.display = 'inline-block';
                 spinner.style.display = 'none';
                 button.disabled = false;
             });
         }
-
-        // Address Selection Modal Functions
-        function showAddressSelection() { // Assuming you might need this
-            showModal('addressSelectionModal');
-        }
-        function hideAddressSelection() {
-            hideModal('addressSelectionModal');
-        }
-
-        // Payment Selection Modal Functions
-        function showPaymentSelection() { // Assuming you might need this
-            showModal('paymentSelectionModal');
-        }
-        function hidePaymentSelection() {
-            hideModal('paymentSelectionModal');
-        }
-
-        // Existing sidebar toggle functionality
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.querySelector('.sidebar');
-        const mainContent = document.querySelector('.main-content');
-        const toggleIcon = sidebarToggle.querySelector('i');
-
-        function toggleSidebar() {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                toggleIcon.classList.remove('fa-bars');
-                toggleIcon.classList.add('fa-times');
-            } else {
-                toggleIcon.classList.remove('fa-times');
-                toggleIcon.classList.add('fa-bars');
-            }
-            
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-
-        sidebarToggle.addEventListener('click', toggleSidebar);
-
-        // Check saved sidebar state
-        document.addEventListener('DOMContentLoaded', () => {
-            const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (sidebarCollapsed) {
-                toggleSidebar();
-            }
-        });
     </script>
 
     <style>
-        /* Buy Modal Styles */
-        .delivery-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .delivery-section h3 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .selected-address {
-            margin-bottom: 10px;
-        }
-
-        .address-info {
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-
-        .address-type {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .address-line {
-            color: #666;
-            margin: 2px 0;
-        }
-
-        .buy-modal-actions {
+        /* Notification Styles */
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2500;
             display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            border-top: 1px solid #eee;
-            margin-top: 20px;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            pointer-events: none;
         }
 
-        .modal-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
+        .notification {
+            background: white;
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            pointer-events: auto;
+            transform: translateY(0);
+            opacity: 1;
             transition: all 0.3s ease;
         }
 
-        .cancel-buy-btn {
-            background: #f1f1f1;
-            color: #333;
+        .notification.success {
+            border-left: 4px solid #4caf50;
         }
 
-        .confirm-buy-btn {
-            background: #ff6b6b;
-            color: white;
+        .notification.error {
+            border-left: 4px solid #f44336;
         }
 
-        .cancel-buy-btn:hover {
-            background: #e4e4e4;
+        .notification i {
+            font-size: 1.2rem;
         }
 
-        .confirm-buy-btn:hover {
-            background: #ff5252;
+        .notification.success i {
+            color: #4caf50;
         }
 
-        /* MODAL STYLES - REVISED FOR VISIBILITY & ANIMATION */
-        .modal-overlay {
+        .notification.error i {
+            color: #f44336;
+        }
+
+        /* Modal Improvements */
+        .modal-overlay,
+        .cart-modal-overlay,
+        .selection-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -722,203 +935,222 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             bottom: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0,0,0,0.7); /* Base background for overlay */
+            background-color: rgba(0,0,0,0.7);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
-
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: opacity 0.3s ease-out, visibility 0s linear 0.3s;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
 
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-            transition: opacity 0.3s ease-out, visibility 0s linear 0s;
-        }
-
-        /* Inner modal content styling (logout, buy, selection) */
+        .cart-modal,
         .logout-modal,
-        .buy-modal,
-        .selection-modal .selection-modal-content { /* Target content part if selection-modal is just a wrapper */
-            /* Common styling for inner modals if any (e.g., background, border-radius) */
-            /* Specifics are already in favorite.css or below */
+        .selection-modal {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+            transition: all 0.3s ease;
+            transform: scale(0.95);
             opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-            transition-delay: 0.05s; /* Slight delay for content to pop after overlay fades in */
+            margin: 0;
         }
-        
-        /* If .selection-modal is the direct animated child of .selection-modal-overlay */
-        .selection-modal-overlay.visible .selection-modal {
-             opacity: 1;
-             transform: scale(1);
-        }
-        /* If .selection-modal-content is the animated child */
-         .selection-modal-overlay.visible .selection-modal .selection-modal-content {
-             opacity: 1;
-             transform: scale(1);
-         }
 
-
-        .modal-overlay.visible .logout-modal,
-        .modal-overlay.visible .buy-modal {
-            opacity: 1;
+        .cart-modal.active,
+        .logout-modal.active,
+        .selection-modal.active {
             transform: scale(1);
-            margin: auto; /* Use shorthand for centering in both axes within the flex container */
-        }
-        
-        /* Ensure the backdrop-filter fix from before is still applied when modals are visible */
-        .modal-overlay.visible {
-            backdrop-filter: none !important; /* Kept from before */
-            -webkit-backdrop-filter: none !important; /* Kept from before */
+            opacity: 1;
         }
 
-        /* Remove all payment-related styles that might cause conflict (original block) */
-        /* .payment-section, */ /* Keeping this commented if it's a section not a modal */
-        /* .selection-modal-overlay, */ /* Handled by generic .modal-overlay now */
-        /* .selection-modal { */ /* Handled by specific or generic inner modal styles */
-            /* display: none; */ /* Original line, no longer needed with visibility approach */
-        /* } */
-        
-        /* Fix for blur issues - AGGRESSIVE OVERRIDES (original block) */
-        /* ... (Your existing aggressive overrides for product cards, text, etc. remain untouched below) ... */
-        /* ... these should not conflict with the new modal logic ... */
-
-
-        /* Ensure modal overlays do not cause blur (Kept) */
-        .buy-modal-overlay, 
-        .modal-overlay,
-        .selection-modal-overlay { /* This might be redundant if all use .modal-overlay class */
-            /* backdrop-filter: none !important; */ /* Moved to .modal-overlay.visible */
-            /* -webkit-backdrop-filter: none !important; */ /* Moved to .modal-overlay.visible */
-            /* background: rgba(0,0,0,0.7) !important; */ /* Already on .modal-overlay */
+        /* Cart Modal Styles (Modern Style) */
+        .cart-modal {
+            width: 350px;
+            max-width: 90vw;
         }
 
-        /* === Product Card and Image Overrides - HIGHEST PRIORITY === */
-        body .container .main-content .products-grid .product-card, /* High specificity for user.css structure */
-        .product-card { /* General override */
-            transition: none !important; 
-            transform: none !important; /* Ensure card itself is not transformed */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important; /* Base shadow, slightly adjusted for visibility */
-            will-change: auto !important;
+        .cart-modal-header {
+            position: relative;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
         }
 
-        body .container .main-content .products-grid .product-card:hover,
-        .product-card:hover {
-            transform: none !important; /* NO transform on hover */
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25) !important; /* Hover shadow, slightly adjusted */
-        }
-
-        /* Image and its container - ABSOLUTELY NO TRANSFORMS OR FILTERS */
-        .product-card .product-image-container {
-            overflow: visible !important; 
-            background: transparent !important;
-            transform: none !important;
-            filter: none !important;
-            transition: none !important;
-        }
-
-        .product-card .product-image-container .product-image, /* Targeting image inside its container */
-        .product-image { /* General override for product-image class */
-            filter: none !important;
-            -webkit-filter: none !important;
-            image-rendering: crisp-edges !important;
-            image-rendering: pixelated !important;  
-            transform: none !important; /* CRITICAL: Prevent any scaling */
-            transition: none !important; /* CRITICAL: No transitions on images */
-            opacity: 1 !important; /* Ensure full opacity */
-            outline: 1px solid transparent !important; /* Helps some browsers with rendering */
-            backface-visibility: hidden !important; /* May help with rendering artifacts */
-            -webkit-backface-visibility: hidden !important;
-        }
-        
-        /* Ensure NO pseudo-elements on image/container are causing blur */
-        .product-card .product-image-container::before,
-        .product-card .product-image-container::after,
-        .product-card .product-image::before,
-        .product-card .product-image::after {
-            display: none !important;
-        }
-        
-        /* Remove any lingering image overlay effects (Kept) */
-        .product-card .image-overlay {
-            display: none !important;
-        }
-
-        /* Text rendering (Kept) */
-        body {
-            text-rendering: optimizeLegibility !important;
-            -webkit-font-smoothing: antialiased !important;
-            -moz-osx-font-smoothing: grayscale !important;
-            font-smooth: never !important; 
-            -webkit-font-smoothing: none !important;
-        }
-        
-        /* Main layout elements - Remove transitions if they cause widespread blur during sidebar toggle */
-        /* Comment these out if sidebar animation becomes too jerky and is not the source of persistent card blur */
-        /*
-        .sidebar, .main-content {
-            transition: none !important;
-        }
-        */
-
-        /* Styles for Shop Now button and Empty Favorites (Kept) */
-        .shop-now-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.8rem 1.5rem;
-            background: #45935b;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.2s ease; 
-            will-change: background-color;
-        }
-        
-        .shop-now-btn:hover {
-            background: #367347;
-        }
-        
-        .empty-favorites {
+        .cart-modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
             text-align: center;
-            padding: 3rem 1rem;
-            color: #fff;
-        }
-        
-        .empty-favorites i {
-            font-size: 3rem;
-            color: #45935b;
-            margin-bottom: 1rem;
-        }
-        
-        .empty-favorites h3 {
-            color: #fff;
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .empty-favorites p {
-            color: #888;
-            margin-bottom: 1.5rem;
         }
 
-        /* Ensure logout modal overlay uses flex for centering - REMOVING THIS BLOCK */
-        /*
-        #logoutModal {
+        .cart-modal-close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .cart-modal-content {
+            padding: 20px;
+        }
+
+        .product-preview {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .preview-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .preview-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+
+        .preview-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #45935b;
+            margin: 0;
+        }
+
+        .quantity-selector {
+            display: flex;
             align-items: center;
             justify-content: center;
+            margin: 25px 0;
         }
-        */
+
+        .quantity-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background: white;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quantity-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .quantity-input {
+            width: 60px;
+            height: 36px;
+            margin: 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .availability-info {
+            text-align: center;
+            color: #777;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .cart-modal-actions {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-modal-actions .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .cart-modal-actions .cancel-btn {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .cart-modal-actions .confirm-btn {
+            background: #45935b;
+            color: white;
+        }
+
+        .cart-modal-actions .cancel-btn:hover {
+            background: #eee;
+        }
+
+        .cart-modal-actions .confirm-btn:hover {
+            background: #367347;
+        }
+
+
+
+        /* Ensure product images display correctly */
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            filter: none !important;
+            -webkit-filter: none !important;
+        }
+
+        /* Total Price Container Styles */
+        .total-price-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .total-price-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .total-price-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #45935b;
+            margin: 0;
+        }
+
+        /* Fix any text rendering issues */        
+        body {            
+            text-rendering: optimizeLegibility;            
+            -webkit-font-smoothing: antialiased;            
+            -moz-osx-font-smoothing: grayscale;        
+        }    
     </style>
 </body>
 </html> 

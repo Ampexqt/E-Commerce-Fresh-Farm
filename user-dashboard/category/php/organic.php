@@ -11,8 +11,8 @@ define('LOW_STOCK_THRESHOLD', 15); // Define Low Stock threshold
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fruits</title>
-    <link rel="stylesheet" href="../css/fruits.css">
+    <title>Organic Products</title>
+    <link rel="stylesheet" href="../css/organic.css">
     <style>
         /* Custom Modal Styles */
         .modal-overlay {
@@ -58,7 +58,7 @@ define('LOW_STOCK_THRESHOLD', 15); // Define Low Stock threshold
         }
         
         .modal-btn {
-            background-color: #20c997;
+            background-color: #2ecc71;
             color: white;
             border: none;
             border-radius: 5px;
@@ -70,40 +70,40 @@ define('LOW_STOCK_THRESHOLD', 15); // Define Low Stock threshold
         }
         
         .modal-btn:hover {
-            background-color: #1baa80;
+            background-color: #27ae60;
         }
     </style>
 </head>
 <body>
     <header>
         <a href="/fresh1/user-dashboard/user.php" class="nav-button">Back to Home</a>
-        <h1 class="category-title">Fruits</h1>
+        <h1 class="category-title">Organic Products</h1>
         <a href="/fresh1/user-dashboard/cart/cart.php" class="nav-button">Go to Cart</a>
     </header>
 
     <main class="product-grid">
         <?php
-        // Fetch fruits from the database
-        $sql = "SELECT id, name, description, price, image_path, stock, status FROM products WHERE category = 'Fruits'";
+        // Fetch organic products from the database
+        $sql = "SELECT id, name, description, price, image_path, stock, status FROM products WHERE category = 'Organic'";
         $result = $conn->query($sql);
 
         if ($result && $result->num_rows > 0) {
-            // Loop through fruits and display them
-            while ($fruit = $result->fetch_assoc()) {
-                $isOutOfStock = ($fruit['status'] === 'Out of Stock' || $fruit['stock'] <= 0);
+            // Loop through organic products and display them
+            while ($organic = $result->fetch_assoc()) {
+                $isOutOfStock = ($organic['status'] === 'Out of Stock' || $organic['stock'] <= 0);
                 
                 // Determine if product should be displayed as "Low Stock"
                 $isEffectivelyLowStock = !$isOutOfStock &&
-                                         ($fruit['status'] === 'Low Stock' ||
-                                          ($fruit['stock'] > 0 && $fruit['stock'] <= LOW_STOCK_THRESHOLD));
+                                         ($organic['status'] === 'Low Stock' ||
+                                          ($organic['stock'] > 0 && $organic['stock'] <= LOW_STOCK_THRESHOLD));
 
-                echo "<div class='product-card' data-product-id='" . htmlspecialchars($fruit['id']) . "'>";
+                echo "<div class='product-card' data-product-id='" . htmlspecialchars($organic['id']) . "'>";
                 // Assuming image_path is relative to a base images directory, e.g., /fresh1/images/
                 // Adjust the base path as per your actual image storage structure.
-                $imagePath = '/fresh1/' . htmlspecialchars($fruit['image_path']);
-                echo "<img src='" . $imagePath . "' alt='" . htmlspecialchars($fruit['name']) . "'>";
-                echo "<h3>" . htmlspecialchars($fruit['name']) . "</h3>";
-                echo "<p class='description'>" . htmlspecialchars($fruit['description']) . "</p>";
+                $imagePath = '/fresh1/' . htmlspecialchars($organic['image_path']);
+                echo "<img src='" . $imagePath . "' alt='" . htmlspecialchars($organic['name']) . "'>";
+                echo "<h3>" . htmlspecialchars($organic['name']) . "</h3>";
+                echo "<p class='description'>" . htmlspecialchars($organic['description']) . "</p>";
 
                 // Display Status and Stock
                 echo "<div class='product-status-info'>";
@@ -111,26 +111,26 @@ define('LOW_STOCK_THRESHOLD', 15); // Define Low Stock threshold
                     echo "<span class='status-badge status-out-of-stock'>Out of Stock</span>";
                 } elseif ($isEffectivelyLowStock) {
                     echo "<span class='status-badge status-low-stock'>Low Stock</span>";
-                    echo "<span class='stock-left'>(" . htmlspecialchars($fruit['stock']) . " left)</span>";
+                    echo "<span class='stock-left'>(" . htmlspecialchars($organic['stock']) . " left)</span>";
                 } else { // In Stock (and not Out of Stock or Low Stock)
                     echo "<span class='status-badge status-in-stock'>In Stock</span>";
-                    echo "<span class='stock-left'>(" . htmlspecialchars($fruit['stock']) . " available)</span>";
+                    echo "<span class='stock-left'>(" . htmlspecialchars($organic['stock']) . " available)</span>";
                 }
                 echo "</div>";
 
-                echo "<p class='price' data-price='" . htmlspecialchars($fruit['price']) . "'>₱" . number_format($fruit['price'], 2) . "</p>";
+                echo "<p class='price' data-price='" . htmlspecialchars($organic['price']) . "'>₱" . number_format($organic['price'], 2) . "</p>";
                 
                 echo "<div class='quantity-selector'" . ($isOutOfStock ? " style='display:none;'" : "") . ">";
                 echo "<button class='quantity-btn minus-btn'>-</button>";
                 echo "<span class='quantity-value'>1</span>";
                 echo "<button class='quantity-btn plus-btn'>+</button>";
                 echo "</div>";
-                echo "<p class='total-price'" . ($isOutOfStock ? " style='display:none;'" : "") . ">Total: ₱" . number_format($fruit['price'], 2) . "</p>";
+                echo "<p class='total-price'" . ($isOutOfStock ? " style='display:none;'" : "") . ">Total: ₱" . number_format($organic['price'], 2) . "</p>";
                 echo "<button class='add-to-cart-btn'" . ($isOutOfStock ? " disabled" : "") . ">" . ($isOutOfStock ? "Out of Stock" : "Add to Cart") . "</button>";
                 echo "</div>";
             }
         } else {
-            echo "<p style='text-align:center; grid-column: 1 / -1;'>No fruits found in this category.</p>";
+            echo "<p style='text-align:center; grid-column: 1 / -1;'>No organic products found in this category.</p>";
         }
         // $conn->close(); // Consider closing connection at the end of script execution if not handled by connect.php
         ?>
@@ -242,6 +242,3 @@ define('LOW_STOCK_THRESHOLD', 15); // Define Low Stock threshold
 
 </body>
 </html>
-
-
-

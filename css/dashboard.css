@@ -122,3 +122,38 @@ color: var(--text-light);
   height: 300px;
   width: 100%;
 }
+
+/* Logout styles */
+.nav-link[data-bs-toggle="modal"] {
+  color: #dc3545;
+}
+
+.nav-link[data-bs-toggle="modal"]:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.nav-link[data-bs-toggle="modal"] i {
+  margin-right: 8px;
+}
+
+/* Modal styles */
+.modal-content {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  background-color: #f8f9fa;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.1);
+  background-color: #f8f9fa;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}

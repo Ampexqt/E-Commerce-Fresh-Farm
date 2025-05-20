@@ -1,4 +1,13 @@
 <?php
+session_start();
+
+// Check if user is logged in and is an admin
+if(!isset($_SESSION['user_id']) || ($_SESSION['user_role'] !== 'admin' && !isset($_SESSION['is_admin']))) {
+    // Not logged in or not an admin, redirect to login page
+    header("Location: ../index.php");
+    exit;
+}
+
 // Include database connection
 require_once '../connect.php';
 
@@ -316,7 +325,7 @@ $products = getProducts($conn, $search);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="orders.php">
+                        <a class="nav-link" href="AdminOrders.php">
                             <i class="fas fa-shopping-cart"></i> Orders
                         </a>
                     </li>
@@ -338,6 +347,11 @@ $products = getProducts($conn, $search);
                     <li class="nav-item">
                         <a class="nav-link" href="settings.php">
                             <i class="fas fa-cog"></i> Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>
                 </ul>
@@ -647,6 +661,25 @@ $products = getProducts($conn, $search);
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to logout?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="../logout.php" class="btn btn-danger">Logout</a>
             </div>
         </div>
     </div>

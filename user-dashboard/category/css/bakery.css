@@ -19,7 +19,7 @@ header {
 }
 
 .nav-button {
-    background-color: #20c997; /* A slightly softer, modern green */
+    background-color: #20c997; /* Green color for default theme */
     color: #ffffff;
     padding: 8px 18px;
     text-decoration: none;
@@ -30,7 +30,7 @@ header {
 }
 
 .nav-button:hover {
-    background-color: #1baa80;
+    background-color: #1baa80; /* Darker green on hover */
 }
 
 .category-title {
@@ -109,9 +109,9 @@ header {
 }
 
 .status-in-stock {
-    background-color: #e6fff7;
-    color: #00875a;
-    border-color: #00875a;
+    background-color: #e6fff7; /* Light green background */
+    color: #00875a; /* Green text */
+    border-color: #00875a; /* Green border */
 }
 
 .status-low-stock {
@@ -133,7 +133,7 @@ header {
 
 .product-card .price {
     font-size: 1.45em; /* Slightly increased size for price */
-    color: #148363;   /* Dark, readable green for highlight */
+    color: #148363;   /* Green for default theme */
     font-weight: 700;
     margin-bottom: 18px;
 }
@@ -182,7 +182,7 @@ header {
 }
 
 .add-to-cart-btn {
-    background-color: #20c997;
+    background-color: #20c997; /* Green color for default theme */
     color: white;
     padding: 10px 16px;
     border: none;
@@ -198,7 +198,7 @@ header {
 }
 
 .add-to-cart-btn:hover {
-    background-color: #1baa80;
+    background-color: #1baa80; /* Darker green on hover */
 }
 
 .add-to-cart-btn:disabled {
@@ -247,45 +247,55 @@ header {
 @media (max-width: 480px) {
     header {
         padding: 12px 4%;
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
     }
+    
     .category-title {
-        font-size: 1.5em;
-        margin-bottom: 10px;
+        font-size: 1.4em;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 8px;
     }
+    
     .nav-button {
-       font-size: 0.8em;
-       padding: 7px 12px;
-       width: auto;
-       margin-bottom: 5px;
+        font-size: 0.8em;
+        padding: 6px 12px;
     }
+    
     header a.nav-button:nth-child(1) { order: 1; }
     header h1.category-title { order: 0; }
     header a.nav-button:nth-child(3) { order: 2; }
-
+    
     .product-grid {
-        grid-template-columns: 1fr;
-        gap: 18px;
-        padding: 20px 4%;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        padding: 20px 3%;
     }
+    
     .product-card img {
-        max-width: 120px;
-        height: 120px;
+        max-width: 110px;
+        height: 110px;
     }
+    
     .product-card h3 {
-        font-size: 1.15em; /* Adjusted */
+        font-size: 1.1em;
     }
-     .product-card .price {
-        font-size: 1.25em; /* Adjusted */
+    
+    .product-card .price {
+        font-size: 1.25em;
     }
+    
     .quantity-btn {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         font-size: 1em;
     }
+    
     .add-to-cart-btn {
-        padding: 9px 12px;
+        padding: 8px 12px;
         font-size: 0.8em;
     }
 }

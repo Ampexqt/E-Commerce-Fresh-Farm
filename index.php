@@ -60,23 +60,26 @@ if (session_status() === PHP_SESSION_NONE) {
 
           <!-- Login Form -->
           <form id="loginForm" class="auth-form" method="post">
-            <h2>Welcome Back!</h2>
-            <p>Sign in to access your account</p>
-            <div id="login-error" style="display: none;"></div>
-            <div id="login-success" style="display: none;"></div>
+            <h2>Login to Your Account</h2>
             
+            <div id="login-error" style="display: none;">
+              <i class="fas fa-exclamation-circle"></i> <span class="message-text"></span>
+            </div>
+            
+            <div id="login-success" style="display: none;">
+              <i class="fas fa-check-circle"></i> <span class="message-text"></span>
+            </div>
+
             <div class="input-group">
               <span class="input-icon"><i class="fa fa-envelope"></i></span>
-              <input type="email" name="email" id="login-email" placeholder="Email address" required>
+              <input type="email" name="email" placeholder="Email address" required>
             </div>
             
             <div class="input-group">
               <span class="input-icon"><i class="fa fa-lock"></i></span>
-              <input type="password" name="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+              <input type="password" name="password" id="login-password" placeholder="Password" required>
               <span class="toggle-password" data-target="login-password"><i class="fa fa-eye"></i></span>
             </div>
-            
-            <label><input type="checkbox" name="remember"> Remember me</label>
             
             <div class="form-bottom">
               <a href="#">Forgot password?</a>
@@ -89,8 +92,14 @@ if (session_status() === PHP_SESSION_NONE) {
           <form id="signupForm" class="auth-form" style="display: none;" method="post">
             <h2 class="signup-title">Create Account</h2>
             <p class="signup-subtitle">Join our community of fresh produce lovers</p>
-            <div id="signup-error" style="display: none;"></div>
-            <div id="signup-success" style="display: none;"></div>
+            
+            <div id="signup-error" style="display: none;">
+              <i class="fas fa-exclamation-circle"></i> <span class="message-text"></span>
+            </div>
+            
+            <div id="signup-success" style="display: none;">
+              <i class="fas fa-check-circle"></i> <span class="message-text"></span>
+            </div>
 
             <div class="name-fields">
               <div class="input-group">
@@ -106,11 +115,6 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="input-group">
               <span class="input-icon"><i class="fa fa-envelope"></i></span>
               <input type="email" name="email" id="email" placeholder="Email address" required>
-            </div>
-
-            <div class="input-group">
-              <span class="input-icon"><i class="fa fa-phone"></i></span>
-              <input type="tel" name="phone_number" id="phone_number" placeholder="Phone Number" required>
             </div>
 
             <div class="input-group">
@@ -607,17 +611,34 @@ if (session_status() === PHP_SESSION_NONE) {
           errorElement.style.display = 'none';
           successElement.style.display = 'none';
           
+          // Show loading indicator
+          const submitButton = loginForm.querySelector('button[type="submit"]');
+          const originalButtonText = submitButton.textContent;
+          submitButton.disabled = true;
+          submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+          
           // Send AJAX request
-          fetch('login_process.php', {
+          fetch('login.php', {
             method: 'POST',
             body: formData
           })
-          .then(response => response.json())
+          .then(response => {
+            // Check if response is ok
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
           .then(data => {
+            // Reset button
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+            
             if (data.status) {
               // Success
-              successElement.textContent = data.message;
+              successElement.querySelector('.message-text').textContent = data.message;
               successElement.style.display = 'block';
+              errorElement.style.display = 'none';
               
               // Dispatch userLoggedIn event to handle pending cart items
               const loginEvent = new Event('userLoggedIn');
@@ -625,17 +646,24 @@ if (session_status() === PHP_SESSION_NONE) {
               
               // Redirect after successful login
               setTimeout(function() {
-                window.location.href = 'user-dashboard/user.php'; // Redirect to profile page
+                window.location.href = data.redirect || 'user-dashboard/user.php';
               }, 1500);
             } else {
               // Error
-              errorElement.textContent = data.message;
+              errorElement.querySelector('.message-text').textContent = data.message || 'Login failed. Please check your credentials.';
               errorElement.style.display = 'block';
+              successElement.style.display = 'none';
             }
           })
           .catch(error => {
-            errorElement.textContent = 'An error occurred. Please try again later.';
+            // Reset button
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+            
+            // Display error
+            errorElement.querySelector('.message-text').textContent = 'An error occurred. Please try again later.';
             errorElement.style.display = 'block';
+            successElement.style.display = 'none';
             console.error('Error:', error);
           });
         });
@@ -667,22 +695,48 @@ if (session_status() === PHP_SESSION_NONE) {
           const confirmPassword = formData.get('confirm_password');
           
           if (password !== confirmPassword) {
-            errorElement.textContent = 'Passwords do not match!';
+            errorElement.querySelector('.message-text').textContent = 'Passwords do not match!';
             errorElement.style.display = 'block';
             return;
           }
+          
+          // Show loading indicator
+          const submitButton = signupForm.querySelector('button[type="submit"]');
+          const originalButtonText = submitButton.textContent;
+          submitButton.disabled = true;
+          submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
           
           // Send AJAX request
           fetch('signup_process.php', {
             method: 'POST',
             body: formData
           })
-          .then(response => response.json())
+          .then(response => {
+            // Check if response is ok
+            if (!response.ok) {
+              console.error('Network error:', response.status, response.statusText);
+              throw new Error('Network response was not ok: ' + response.status);
+            }
+            // Parse the JSON response
+            return response.json().catch(error => {
+              console.error('JSON parsing error:', error);
+              throw new Error('Failed to parse server response');
+            });
+          })
           .then(data => {
-            if (data.status) {
+            // Reset button
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+            
+            console.log('Server response:', data);
+            
+            if (data.status === true) {
               // Success
-              successElement.textContent = data.message;
+              successElement.querySelector('.message-text').textContent = data.message;
               successElement.style.display = 'block';
+              errorElement.style.display = 'none';
+              
+              console.log('Registration successful:', data);
               
               // Dispatch userLoggedIn event to handle pending cart items
               const loginEvent = new Event('userLoggedIn');
@@ -693,18 +747,26 @@ if (session_status() === PHP_SESSION_NONE) {
               
               // Redirect after successful signup
               setTimeout(function() {
-                window.location.href = ''; // Redirect to profile page
+                window.location.href = 'user-dashboard/user.php'; // Redirect to user dashboard
               }, 2000);
             } else {
-              // Error
-              errorElement.textContent = data.message;
+              // Error from server
+              errorElement.querySelector('.message-text').textContent = data.message || 'Registration failed. Please try again.';
               errorElement.style.display = 'block';
+              successElement.style.display = 'none';
+              console.error('Registration error:', data.message);
             }
           })
           .catch(error => {
-            errorElement.textContent = 'An error occurred. Please try again later.';
+            // Reset button
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+            
+            // Display error
+            console.error('Fetch error:', error);
+            errorElement.querySelector('.message-text').textContent = 'An error occurred. Please try again later.';
             errorElement.style.display = 'block';
-            console.error('Error:', error);
+            successElement.style.display = 'none';
           });
         });
       });

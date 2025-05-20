@@ -901,20 +901,33 @@ input[type="text"]::-ms-clear {
   color: #d32f2f;
   font-size: 14px;
   background-color: rgba(211, 47, 47, 0.1);
-  padding: 10px;
+  padding: 12px 15px;
   border-radius: 4px;
   margin-bottom: 15px;
   display: none;
+  border-left: 4px solid #d32f2f;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 #login-success, #signup-success {
   color: #2e7d32;
   font-size: 14px;
   background-color: rgba(46, 125, 50, 0.1);
-  padding: 10px;
+  padding: 12px 15px;
   border-radius: 4px;
   margin-bottom: 15px;
   display: none;
+  border-left: 4px solid #2e7d32;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive modal */
@@ -1055,77 +1068,6 @@ input[type="text"]::-ms-clear {
   }
 }
 
-<<<<<<< HEAD
-/* Logout Modal Styles */
-#logoutModal .modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
-}
-
-#logoutModal h2 {
-    color: #2d5f4b;
-    margin-bottom: 15px;
-    font-size: 24px;
-}
-
-#logoutModal p {
-    color: #666;
-    margin-bottom: 25px;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.confirm-logout, .cancel-logout {
-    padding: 10px 25px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s ease;
-}
-
-.confirm-logout {
-    background-color: #d32f2f;
-    color: white;
-}
-
-.confirm-logout:hover {
-    background-color: #b71c1c;
-}
-
-.cancel-logout {
-    background-color: #e0e0e0;
-    color: #333;
-}
-
-.cancel-logout:hover {
-    background-color: #bdbdbd;
-}
-
-.auth-button.logout {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #d32f2f;
-    color: white;
-    border: none;
-}
-
-.auth-button.logout:hover {
-    background-color: #b71c1c;
-}
-
-.auth-button.logout i {
-    font-size: 16px;
-=======
 .auth-button.logout {
     background-color: #ff4444;
     color: white;
@@ -1137,5 +1079,16 @@ input[type="text"]::-ms-clear {
 
 .auth-button.logout:hover {
     background-color: #cc0000;
->>>>>>> 2211b4f6f7f82ac19a68b05947692b23e6388406
+}
+
+#login-error i, #signup-error i {
+  color: #d32f2f;
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+#login-success i, #signup-success i {
+  color: #2e7d32;
+  margin-right: 8px;
+  font-size: 16px;
 }

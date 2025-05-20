@@ -225,7 +225,7 @@ if ($paymentCount < 3) {
 } else {
     ?>
     <div class="max-payment-methods">
-        <p>Maximum number of payment methods (3) reached</p>
+        <p style="color: #fff;">Maximum number of payment methods (3) reached</p>
     </div>
     <?php
 }

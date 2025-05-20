@@ -434,7 +434,7 @@ body {
     width: 45px;
 }
 
-.toggle-btn
+.toggle-btn i {
     font-size: 20px;
     transition: transform 0.3s ease;
 }
@@ -443,7 +443,7 @@ body {
 .user-info {
     text-align: center;
     padding: 1.5rem 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eaeaea;
     margin-top: 20px;
 }
 
@@ -467,7 +467,7 @@ body {
 
 .user-info p {
     font-size: 0.85rem;
-    color: #666;
+    color: #777;
     margin-bottom: 1rem;
 }
 
@@ -477,7 +477,7 @@ body {
     gap: 1.5rem;
     margin-top: 0.75rem;
     padding: 0.75rem;
-    background: #f8f9fa;
+    background: #f8f8f8;
     border-radius: 8px;
 }
 
@@ -531,7 +531,7 @@ body {
 }
 
 .menu-items a.active {
-    background-color: rgba(59, 122, 87, 0.1);
+    background-color: rgba(59, 122, 87, 0.15);
     color: var(--primary-color);
     font-weight: 500;
 }
@@ -545,42 +545,38 @@ body {
     background-color: rgba(255, 68, 68, 0.1);
 }
 
-/* Settings Page Specific Styles */
+/* Settings Container Styles */
 .settings-container {
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.settings-container h1 {
-    margin-bottom: 20px;
-    font-size: 24px;
-    color: #333;
+    max-width: 700px;
+    margin: 3rem auto 2rem;
+    background: #1e1e1e;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transition: margin-left 0.3s ease;
 }
 
 .tabs {
-    border-bottom: 1px solid #333; /* Darker border for tabs */
-    margin-bottom: 20px;
+    display: flex;
+    border-bottom: 1px solid #2d2d2d;
+    background-color: #1a1a1a;
 }
 
 .tab-link {
-    background-color: transparent;
+    padding: 20px 25px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #888;
+    background: none;
     border: none;
-    padding: 10px 15px;
     cursor: pointer;
-    font-size: 1rem;
-    color: #aaa; /* Light gray for inactive tab text */
-    margin-right: 10px;
     position: relative;
-    transition: color 0.3s ease;
+    transition: color 0.3s;
+    letter-spacing: 0.5px;
 }
 
 .tab-link.active {
-    color: var(--primary-color); /* Green for active tab text */
-    font-weight: 600;
+    color: #3b7a57;
 }
 
 .tab-link.active::after {
@@ -590,197 +586,103 @@ body {
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: var(--primary-color);
+    background-color: #3b7a57;
+}
+
+.tab-content {
+    padding: 35px;
+    background-color: #1e1e1e;
+    color: #f0f0f0;
 }
 
 .tab-content h3 {
-    font-size: 1.1rem; 
-    color: #f0f0f0; /* Light text for headings */
-    margin-bottom: 20px; /* Increased margin */
-    font-weight: 600;
-}
-
-/* Input group specific to settings page form */
-.settings-container .input-group label {
-    display: block;
-    margin-bottom: 8px; 
-    color: #bbb; /* Light gray for labels */
+    font-size: 24px;
+    color: #ffffff;
+    margin-bottom: 30px;
     font-weight: 500;
-    font-size: 0.9rem;
 }
 
-.settings-container .input-group input[type="password"] {
-    width: 100%; /* Full width for the input itself */
-    padding: 12px; /* Increased padding */
-    border: 1px solid #444; /* Darker border for inputs */
-    border-radius: 6px;
-    font-size: 0.9rem;
-    background: #333; /* Dark background for input fields */
-    color: #f0f0f0; /* Light text in input fields */
-    box-sizing: border-box;
+/* Input styling */
+.input-group {
+    margin-bottom: 25px;
+    width: 100%;
 }
 
-.settings-container .input-group input[type="password"]:focus {
-    border-color: var(--primary-color);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(59, 122, 87, 0.2);
-    background: #3a3a3a; /* Slightly lighter on focus */
+.input-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: #999;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.2px;
 }
 
 .password-input-container {
     position: relative;
-    display: flex;
-    align-items: center;
+    width: 100%;
 }
 
-/* Ensure the input takes full width within its container if an icon is present */
-.password-input-container input[type="password"] {
-    width: calc(100% - 40px); /* Adjust if icon size/padding changes */
-     /* Remove margin-right if icon is absolutely positioned */
-}
-
-
-.password-toggle {
-    position: absolute;
-    right: 1px; /* Adjust to align within input padding */
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #aaa; /* Eye icon color */
-    padding: 10px; /* Padding for click area */
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.password-input-container input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 15px;
+    border: none;
+    border-radius: 8px;
+    background: #2a2a2a;
+    color: #f0f0f0;
     box-sizing: border-box;
 }
 
-.password-toggle i {
-    font-size: 0.9rem;
-}
-
-
-.settings-container .btn {
-    padding: 12px 25px; /* Increased padding for buttons */
-    font-size: 0.9rem;
-    border-radius: 6px;
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #777;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-weight: 500; /* Slightly bolder text */
 }
 
-.settings-container .btn-primary {
-    background-color: var(--primary-color); 
-    color: white;
+/* Buttons */
+.btn {
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
     border: none;
 }
 
-.settings-container .btn-primary:hover {
-    background-color: #2e7d32; 
+.btn-primary {
+    background-color: #3b7a57;
+    color: #fff;
+    letter-spacing: 0.5px;
 }
 
-.settings-container .btn-danger {
-    background-color: #d9534f; 
-    color: white;
-    border: none;
+.btn-primary:hover {
+    background-color: #2e6a47;
 }
 
-.settings-container .btn-danger:hover {
-    background-color: #c9302c; 
+.btn-danger {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    letter-spacing: 0.5px;
+    padding: 12px 24px;
 }
 
-.danger-zone-hr {
-    border: none;
-    border-top: 1px solid #444; /* Lighter hr for dark theme */
-    margin: 30px 0;
+.btn-danger:hover {
+    background-color: rgba(231, 76, 60, 0.3);
 }
 
+/* Danger Zone */
 .danger-zone {
-    /* Styles for the danger zone section */
+    margin-top: 20px;
 }
 
 .danger-zone h3 {
-    color: #d9534f; 
-    font-size: 1.1rem;
-    margin-bottom: 15px; /* Increased margin */
-}
-
-/* --- Force dark theme for settings-container only --- */
-.settings-container {
-    background: #23272b !important;
-    color: #f0f0f0 !important;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.45);
-}
-
-.settings-container .tabs {
-    border-bottom: 1px solid #333 !important;
-}
-
-.settings-container .tab-link {
-    color: #aaa !important;
-    background: transparent !important;
-    border: none;
-    transition: color 0.2s;
-}
-
-.settings-container .tab-link.active {
-    color: #4caf50 !important;
-    font-weight: 600;
-}
-
-.settings-container .tab-link.active::after {
-    background: #4caf50 !important;
-}
-
-.settings-container .tab-content h3 {
-    color: #f0f0f0 !important;
-}
-
-.settings-container .input-group label {
-    color: #bbb !important;
-}
-
-.settings-container .input-group input,
-.settings-container .input-group input[type="password"] {
-    background: #18191a !important;
-    color: #f0f0f0 !important;
-    border: 1px solid #333 !important;
-}
-
-.settings-container .input-group input:focus,
-.settings-container .input-group input[type="password"]:focus {
-    border-color: #4caf50 !important;
-    background: #23272b !important;
-}
-
-.settings-container .password-toggle {
-    color: #aaa !important;
-}
-
-.settings-container .btn-primary {
-    background: #4caf50 !important;
-    color: #fff !important;
-    border: none;
-}
-
-.settings-container .btn-primary:hover {
-    background: #388e3c !important;
-}
-
-.settings-container .btn-danger {
-    background: #d9534f !important;
-    color: #fff !important;
-    border: none;
-}
-
-.settings-container .btn-danger:hover {
-    background: #c9302c !important;
-}
-
-.settings-container .danger-zone-hr {
-    border-top: 1px solid #333 !important;
-}
-
-.settings-container .danger-zone h3 {
-    color: #ff5555 !important;
+    color: #e74c3c;
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
 }

@@ -78,6 +78,7 @@ body {
     color: #e74c3c;
     text-decoration: none;
     font-size: 1.2em;
+    cursor: pointer;
 }
 
 .remove-btn:hover {
@@ -86,6 +87,7 @@ body {
 
 .action-cell {
     text-align: center;
+    cursor: pointer;
 }
 
 .cart-table tfoot td {
@@ -133,6 +135,7 @@ body {
     align-items: center;
     gap: 8px;
     transition: background-color 0.3s ease;
+    cursor: pointer;
 }
 
 .continue-shopping-btn {
@@ -148,8 +151,16 @@ body {
 .checkout-btn {
     background-color: #27ae60;
     color: white;
+    cursor: pointer;
 }
 
 .checkout-btn:hover {
     background-color: #229954;
+}
+
+/* Additional styles for checkboxes */
+input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
 }

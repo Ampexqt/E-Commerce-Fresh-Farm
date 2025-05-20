@@ -11,6 +11,33 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Success and error messages
+$message = '';
+$messageType = '';
+
+if (isset($_GET['success']) && $_GET['success'] === 'removed') {
+    $message = 'Item has been successfully removed from your cart.';
+    $messageType = 'success';
+} elseif (isset($_GET['error'])) {
+    switch ($_GET['error']) {
+        case 'invalid_item':
+            $message = 'Invalid item selected.';
+            break;
+        case 'unauthorized':
+            $message = 'You are not authorized to remove this item.';
+            break;
+        case 'database':
+            $message = 'A database error occurred. Please try again later.';
+            break;
+        case 'delete_failed':
+            $message = 'Failed to remove the item. Please try again.';
+            break;
+        default:
+            $message = 'An error occurred.';
+    }
+    $messageType = 'error';
+}
+
 $user_id = $_SESSION['user_id'];
 $cart_items = [];
 $grand_total = 0; 
@@ -45,13 +72,128 @@ $conn->close();
     <title>Your Shopping Cart</title>
     <link rel="stylesheet" href="../css/cart.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Delete Confirmation Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .modal-header {
+            margin-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .modal-content {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            color: #4a4a4a;
+            line-height: 1.5;
+        }
+        
+        .modal-item-name {
+            font-weight: 600;
+            color: #e74c3c;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+        }
+        
+        .modal-cancel-btn {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .modal-cancel-btn:hover {
+            background-color: #dadedf;
+        }
+        
+        .modal-confirm-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .modal-confirm-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        /* Status message styles */
+        .status-message {
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+            animation: fadeOut 5s forwards;
+            animation-delay: 3s;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+    </style>
 </head>
 <body>
     <div class="cart-container">
         <h1><i class="fas fa-shopping-cart"></i> Your Shopping Cart</h1>
+        
+        <?php if (!empty($message)): ?>
+            <div class="status-message status-<?php echo $messageType; ?>">
+                <?php echo htmlspecialchars($message); ?>
+            </div>
+        <?php endif; ?>
 
         <?php if (empty($cart_items)): ?>
-            <p class="empty-cart-message">Your cart is currently empty. <a href="../../../index.php">Continue shopping!</a></p>
+            <p class="empty-cart-message">Your cart is currently empty. <a href="../../user.php">Continue shopping!</a></p>
         <?php else: ?>
             <form id="cartForm" action="../../checkout.php" method="POST">
                 <table class="cart-table">
@@ -69,7 +211,7 @@ $conn->close();
                     </thead>
                     <tbody>
                         <?php foreach ($cart_items as $item): ?>
-                            <tr data-item-price="<?php echo htmlspecialchars($item['price']); ?>" data-item-quantity="<?php echo htmlspecialchars($item['quantity']); ?>" data-cart-id="<?php echo $item['cart_id']; ?>">
+                            <tr data-item-price="<?php echo htmlspecialchars($item['price']); ?>" data-item-quantity="<?php echo htmlspecialchars($item['quantity']); ?>" data-cart-id="<?php echo $item['cart_id']; ?>" data-item-name="<?php echo htmlspecialchars($item['name']); ?>">
                                 <td>
                                     <input type="checkbox" name="selected_items[<?php echo $item['cart_id']; ?>]" value="<?php echo $item['quantity']; ?>" class="item-checkbox">
                                 </td>
@@ -88,9 +230,9 @@ $conn->close();
                                 <td><?php echo htmlspecialchars($item['stock']); ?></td>
                                 <td class="item-total-price">₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
                                 <td class="action-cell">
-                                    <a href="remove_from_cart.php?cart_id=<?php echo $item['cart_id']; ?>" class="remove-btn" title="Remove item">
+                                    <button type="button" class="remove-btn" title="Remove item" data-cart-id="<?php echo $item['cart_id']; ?>">
                                         <i class="fas fa-trash-alt"></i>
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -104,13 +246,29 @@ $conn->close();
                 </table>
 
                 <div class="cart-actions">
-                    <a href="../../../index.php" class="continue-shopping-btn"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+                    <a href="../../user.php" class="continue-shopping-btn"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
                     <button type="submit" id="checkoutBtn" class="checkout-btn" disabled>
                         Proceed to Checkout <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
             </form>
         <?php endif; ?>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Remove Item</h3>
+            </div>
+            <div class="modal-content">
+                Are you sure you want to remove <span class="modal-item-name" id="deleteItemName"></span> from your cart?
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-cancel-btn" id="cancelDeleteBtn">Cancel</button>
+                <button class="modal-btn modal-confirm-btn" id="confirmDeleteBtn">Remove</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -120,8 +278,52 @@ $conn->close();
         const selectedTotalPriceElement = document.getElementById('selectedTotalPriceValue');
         const checkoutBtn = document.getElementById('checkoutBtn');
         const cartForm = document.getElementById('cartForm');
+        
+        // Delete modal elements
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteItemName = document.getElementById('deleteItemName');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        let currentCartId = null;
 
         console.log('Cart JS Loaded. Items:', itemCheckboxes.length, 'SelectAll:', selectAllCheckbox);
+        
+        // Setup delete button functionality
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const row = btn.closest('tr');
+                const cartId = btn.dataset.cartId;
+                const itemName = row.dataset.itemName;
+                
+                // Set modal content and show it
+                deleteItemName.textContent = itemName;
+                currentCartId = cartId;
+                deleteModal.style.display = 'flex';
+            });
+        });
+        
+        // Cancel delete
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.style.display = 'none';
+            currentCartId = null;
+        });
+        
+        // Close modal when clicking outside
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) {
+                deleteModal.style.display = 'none';
+                currentCartId = null;
+            }
+        });
+        
+        // Confirm delete
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (currentCartId) {
+                // Redirect to remove_from_cart.php with the cart_id
+                window.location.href = `remove_from_cart.php?cart_id=${currentCartId}`;
+            }
+        });
 
         function updateSelectedTotalAndButtonState() {
             let currentSelectedTotal = 0;
@@ -203,6 +405,14 @@ $conn->close();
                     alert('Please select at least one item to proceed to checkout.');
                 }
             });
+        }
+
+        // Auto-hide status message after 5 seconds
+        const statusMessage = document.querySelector('.status-message');
+        if (statusMessage) {
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 8000);
         }
 
         // Initial state update on page load

@@ -4,11 +4,17 @@ session_start();
 require_once '../connect.php';
 
 // Handle logout
-if (isset($_POST['action']) && $_POST['action'] === 'logout') {
-    session_destroy();
-    header('Content-Type: application/json');
-    echo json_encode(['status' => 'success']);
-    exit();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get the raw POST data
+    $json_data = file_get_contents('php://input');
+    $post_data = json_decode($json_data, true);
+    
+    if (isset($post_data['action']) && $post_data['action'] === 'logout') {
+        session_destroy();
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'success']);
+        exit();
+    }
 }
 
 // Check if user is logged in
@@ -400,12 +406,12 @@ try {
         <nav class="nav-menu">
             <a href="user.php"><i class="fa-solid fa-house"></i> Home</a>
             <a href="category/php/fruits.php"><i class="fa-solid fa-apple-whole"></i> Fruits</a>
-            <a href="#"><i class="fa-solid fa-carrot"></i> Vegetables</a>
-            <a href="#"><i class="fa-solid fa-cow"></i> Dairy</a>
-            <a href="#"><i class="fa-solid fa-drumstick-bite"></i> Meat</a>
-            <a href="#"><i class="fa-solid fa-seedling"></i> Organic</a>
-            <a href="#"><i class="fa-solid fa-bread-slice"></i> Bakery</a>
-            <a href="category/php/cart.php" class="cart"><i class="fa-solid fa-cart-shopping"></i></a>
+            <a href="category/php/vegetables.php"><i class="fa-solid fa-carrot"></i> Vegetables</a>
+            <a href="category/php/dairy.php"><i class="fa-solid fa-cheese"></i> Dairy</a>
+            <a href="category/php/meat.php"><i class="fa-solid fa-drumstick-bite"></i> Meat</a>
+            <a href="category/php/organic.php"><i class="fa-solid fa-seedling"></i> Organic</a>
+            <a href="category/php/bakery.php"><i class="fa-solid fa-bread-slice"></i> Bakery</a>
+            <a href="category/php/cart.php"><i class="fa-solid fa-cart-shopping"></i></a>
         </nav>
     </header>
 
@@ -434,8 +440,8 @@ try {
                 <li><a href="payment.php"><i class="fa-solid fa-credit-card"></i> Payment Methods</a></li>
                 <li><a href="address.php"><i class="fa-solid fa-location-dot"></i> Delivery Address</a></li>
                 <li><a href="favorite.php"><i class="fa-solid fa-heart"></i> Favorites</a></li>
-                <li><a href="#"><i class="fa-solid fa-gear"></i> Account Settings</a></li>
-                <li><a href="#"><i class="fa-solid fa-phone"></i> Contact Us</a></li>
+                <li><a href="settings.php"><i class="fa-solid fa-gear"></i> Account Settings</a></li>
+                <li><a href="contact.php"><i class="fa-solid fa-phone"></i> Contact Us</a></li>
                 <li><a href="#" onclick="showLogoutModal(); return false;" class="logout-link">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </a></li>
@@ -779,9 +785,34 @@ try {
             if (e.target === cartModal) hideCartModal();
         });
         confirmCartBtn.addEventListener('click', function() {
-            // Implement your add-to-cart logic here (AJAX or redirect)
-            showNotification('Added to cart!', 'success');
-            hideCartModal();
+            const quantity = parseInt(cartQuantityInput.value);
+            
+            // Send AJAX request to add to cart
+            fetch('category/php/add_to_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    product_id: currentCartProductId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from server:', data);
+                if (data.status === true || data.success === true) {
+                    showNotification(data.message || 'Added to cart!', 'success');
+                } else {
+                    showNotification(data.message || 'Failed to add to cart: ' + data.message, 'error');
+                }
+                hideCartModal();
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                showNotification('An error occurred. Please try again. Check console for details.', 'error');
+                hideCartModal();
+            });
         });
 
         // Product action buttons
